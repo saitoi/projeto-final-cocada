@@ -4,3 +4,4 @@ tetris_project/
 .gitignore
 .cocada/
 .ipynb_checkpoints/
+models/
