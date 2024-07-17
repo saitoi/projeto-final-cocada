@@ -238,7 +238,7 @@ def plot_clusters_2d(vetores_originais, vetores_criptografados, palavras_origina
     ax.set_title(titulo)
     ax.legend(handles=[handle1, handle2, handle3, handle4], loc='upper left', bbox_to_anchor=(1, 1))
     plt.subplots_adjust(right=0.75, bottom=0.2)
-    plt.savefig(f'graficos/{amostra}_decomposicao_pca_{method}_2d.png')
+    plt.savefig(f'graficos/{amostra}_decomposicao_pca_{criptografia}_2d.png')
     plt.show()
 
 def plot_clusters_w(vetores_originais, vetores_criptografados, palavras_originais, palavras_criptografadas, titulo, amostra, method='kmeans', criptografia='cifra_cesar'):

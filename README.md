@@ -20,6 +20,10 @@
 
     - `ipyml`
 
+    - `fasttext`
+
+    - `scikit-learn`
+
 - Prontinho, já pode executar a aplicação `Relatorio Final Cocada.ipynb`.
 
 ## Dicas finais 
