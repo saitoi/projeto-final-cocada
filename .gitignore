@@ -1,7 +1,0 @@
-__pycache__/
-fastText/
-tetris_project/
-.gitignore
-.cocada/
-.ipynb_checkpoints/
-models/
