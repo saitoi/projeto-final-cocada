@@ -29,7 +29,24 @@ def cifra_cesar(tokens, deslocamento: int):
                 palavra_codificada += caracter
         texto_codificado.append(palavra_codificada)
     return texto_codificado
+
    
+def cifra_multiplicativa(tokens, chave: int):
+    texto_codificado = []
+    chave = int(chave)
+    
+    for token in tokens:
+        palavra_codificada = ""
+        for caracter in token:
+            if caracter.isupper():
+                palavra_codificada += chr(((ord(caracter) - 65) * chave % 26) + 65)
+            elif caracter.islower():
+                palavra_codificada += chr(((ord(caracter) - 97) * chave % 26) + 97)
+            else:
+                palavra_codificada += caracter
+        texto_codificado.append(palavra_codificada)
+    return texto_codificado
+
         
 # Aplicação do RSA resumido a uma única função
 def rsa_codificar(texto, semente=2032):
@@ -90,6 +107,8 @@ def leitura_impressao_dados(filename, deslocamento: int=3, metodo='cifra_cesar')
         
         if metodo == 'cifra_cesar':
             texto_criptografado = cifra_cesar(palavras_validas, deslocamento)
+        elif metodo == 'cifra_multiplicativa':
+            texto_criptografado = cifra_multiplicativa(palavras_validas, chave=deslocamento)
         else:
             texto_criptografado = rsa_codificar(palavras_validas)
         
@@ -176,6 +195,52 @@ def plot_clusters(vetores_originais, vetores_criptografados, palavras_originais,
 
     # return palavras_por_cluster_originais, palavras_por_cluster_criptografadas
 
+
+def plot_clusters_2d(vetores_originais, vetores_criptografados, palavras_originais, palavras_criptografadas, titulo, amostra, method='kmeans', criptografia='cifra_cesar'):
+    if method == 'kmeans':
+        kmeans = KMeans(n_clusters=2, random_state=42)
+        clusters_originais = kmeans.fit_predict(vetores_originais)
+        clusters_criptografados = kmeans.predict(vetores_criptografados)
+    else:
+        raise ValueError("Método de clusterização não suportado.")
+
+    fig, ax = plt.subplots(figsize=(15, 10))
+
+    # Scatter plot for original vectors
+    scatter_orig = ax.scatter(vetores_originais[:, 0], vetores_originais[:, 1],
+                              c=clusters_originais, cmap='plasma', marker='o', label='Original')
+
+    # Scatter plot for encrypted vectors
+    scatter_cript = ax.scatter(vetores_criptografados[:, 0], vetores_criptografados[:, 1],
+                               c=clusters_criptografados, cmap='plasma', marker='x', label='Criptografado')
+
+    # Adding text labels for each point
+    for i, palavra in enumerate(palavras_originais):
+        ax.text(vetores_originais[i, 0], vetores_originais[i, 1],
+                palavra, color='blue', fontsize=9)
+
+    if criptografia == 'rsa':
+        for i, palavra in enumerate(palavras_criptografadas):
+            ax.text(vetores_criptografados[i, 0], vetores_criptografados[i, 1],
+                    f'c{i}', color='red', fontsize=7)
+    else:
+        for i, palavra in enumerate(palavras_criptografadas):
+            ax.text(vetores_criptografados[i, 0], vetores_criptografados[i, 1],
+                    palavra, color='red', fontsize=9)
+
+    handle1 = mpatches.Patch(color='blue', label='Letra azul = Texto Original')
+    handle2 = mpatches.Patch(color='red', label='Letra vermelha = Texto Criptografado')
+    handle3 = mpatches.Patch(color='blue', label='Ponto Azul = Cluster 1')
+    handle4 = mpatches.Patch(color='yellow', label='Ponto Amarelo = Cluster 2')
+
+    ax.set_xlabel('PCA 1')
+    ax.set_ylabel('PCA 2')
+    ax.set_title(titulo)
+    ax.legend(handles=[handle1, handle2, handle3, handle4], loc='upper left', bbox_to_anchor=(1, 1))
+    plt.subplots_adjust(right=0.75, bottom=0.2)
+    plt.savefig(f'graficos/{amostra}_decomposicao_pca_{method}_2d.png')
+    plt.show()
+
 def plot_clusters_w(vetores_originais, vetores_criptografados, palavras_originais, palavras_criptografadas, titulo, amostra, method='kmeans', criptografia='cifra_cesar'):
     if method == 'kmeans':
         kmeans = KMeans(n_clusters=2, random_state=42)
@@ -254,3 +319,24 @@ def processamento_plotting(amostra, metodo, deslocamento, titulo):
 
     return vetores_reduzidos_originais, vetores_reduzidos_criptografados, tamanhos_projecoes
 
+def processamento_plotting_2d(amostra, metodo, deslocamento, titulo):
+    leitura_impressao_dados(amostra, deslocamento, metodo=metodo)
+
+    ft = fasttext.load_model('models/cc.pt.300.bin')
+
+    palavras_originais = load_tokens(amostra)
+    vetores_originais = [ft.get_word_vector(palavra) for palavra in palavras_originais]
+    vetores_criptografados = load_vectors(f'oov_vetores_{amostra}_{metodo}.txt')
+    palavras_criptografadas = list(vetores_criptografados.keys())
+
+    pca = PCA(n_components=2)  # Usando 2 componentes principais
+    vetores_reduzidos_originais = pca.fit_transform(vetores_originais)
+    vetores_reduzidos_criptografados = pca.transform(list(vetores_criptografados.values()))
+    plot_clusters_2d(vetores_reduzidos_originais, vetores_reduzidos_criptografados, palavras_originais, palavras_criptografadas, amostra=amostra, method='kmeans', criptografia=metodo, titulo=titulo)
+
+    autovetores = pca.components_
+    vetores_criptografados_proj = np.dot(list(vetores_criptografados.values()), autovetores.T)
+
+    tamanhos_projecoes = np.linalg.norm(vetores_criptografados_proj, axis=1)
+
+    return vetores_reduzidos_originais, vetores_reduzidos_criptografados, tamanhos_projecoes
