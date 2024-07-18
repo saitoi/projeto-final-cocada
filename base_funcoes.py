@@ -149,7 +149,7 @@ def plot_clusters(vetores_originais, vetores_criptografados, palavras_originais,
 
     # Scatter plot for encrypted vectors
     ax.scatter(vetores_criptografados[:, 0], vetores_criptografados[:, 1], vetores_criptografados[:, 2],
-               c=clusters_criptografados, cmap='plasma', marker='x', label='Criptografado')
+               c=clusters_criptografados, cmap='plasma', marker='o', label='Criptografado')
 
     # Adding text labels for each point
     for i, palavra in enumerate(palavras_originais):
@@ -212,7 +212,7 @@ def plot_clusters_2d(vetores_originais, vetores_criptografados, palavras_origina
 
     # Scatter plot for encrypted vectors
     scatter_cript = ax.scatter(vetores_criptografados[:, 0], vetores_criptografados[:, 1],
-                               c=clusters_criptografados, cmap='plasma', marker='x', label='Criptografado')
+                              c=clusters_criptografados, cmap='plasma', marker='o', label='Criptografado')
 
     # Adding text labels for each point
     for i, palavra in enumerate(palavras_originais):
@@ -230,13 +230,11 @@ def plot_clusters_2d(vetores_originais, vetores_criptografados, palavras_origina
 
     handle1 = mpatches.Patch(color='blue', label='Letra azul = Texto Original')
     handle2 = mpatches.Patch(color='red', label='Letra vermelha = Texto Criptografado')
-    handle3 = mpatches.Patch(color='blue', label='Ponto Azul = Cluster 1')
-    handle4 = mpatches.Patch(color='yellow', label='Ponto Amarelo = Cluster 2')
 
     ax.set_xlabel('PCA 1')
     ax.set_ylabel('PCA 2')
     ax.set_title(titulo)
-    ax.legend(handles=[handle1, handle2, handle3, handle4], loc='upper left', bbox_to_anchor=(1, 1))
+    ax.legend(handles=[handle1, handle2], loc='upper left', bbox_to_anchor=(1, 1))
     plt.subplots_adjust(right=0.75, bottom=0.2)
     plt.savefig(f'graficos/{amostra}_decomposicao_pca_{criptografia}_2d.png')
     plt.show()
